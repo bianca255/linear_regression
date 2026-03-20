@@ -24,7 +24,7 @@ linear_regression_model/
 
 ## Run in Colab
 
-https://colab.research.google.com/github/bianca255/linear_regression/blob/main/linear_regression_model/summative/linear_regression/multivariate.ipynb
+https://colab.research.google.com/drive/1lgRKLVouRWqRasW3dkpiguc0nrrrfnW_#scrollTo=2tMt9GdRwNv6
 
 ---
 
