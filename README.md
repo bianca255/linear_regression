@@ -22,6 +22,10 @@ linear_regression_model/
 	+-- FlutterApp/
 ```
 
+## Run in Colab
+
+https://colab.research.google.com/github/bianca255/linear_regression/blob/main/linear_regression_model/summative/linear_regression/multivariate.ipynb
+
 ---
 
 ## How to Run
