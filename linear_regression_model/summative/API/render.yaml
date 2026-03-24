@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: student-math-api
+    env: python
+    plan: free
+    rootDir: linear_regression_model/summative/API
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn prediction:app --host 0.0.0.0 --port $PORT
