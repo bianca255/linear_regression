@@ -41,6 +41,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "best_model.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
 FEATURES_PATH = os.path.join(BASE_DIR, "feature_columns.json")
 DATA_PATH = os.path.join(BASE_DIR, "..", "linear_regression", "student-mat.csv")
+DATA_URL = "https://raw.githubusercontent.com/bianca255/linear_regression/main/linear_regression_model/summative/linear_regression/student-mat.csv"
 
 DEFAULT_FEATURE_COLUMNS = [
     "sex", "age", "address", "famsize", "Pstatus", "Medu", "Fedu", "Mjob", "reason",
@@ -50,10 +51,12 @@ DEFAULT_FEATURE_COLUMNS = [
 
 
 def train_and_persist_artifacts() -> tuple[object, object, list[str]]:
-    if not os.path.exists(DATA_PATH):
-        raise RuntimeError(f"Dataset not found at {DATA_PATH}")
-
-    df = pd.read_csv(DATA_PATH, sep=";")
+    if os.path.exists(DATA_PATH):
+        df = pd.read_csv(DATA_PATH, sep=";")
+    else:
+        # Render may run from API root where sibling paths are unavailable.
+        # Fallback to repository raw dataset so startup can still bootstrap artifacts.
+        df = pd.read_csv(DATA_URL, sep=";")
     target = "G3"
 
     X = df.drop(columns=[target]).copy()
