@@ -54,7 +54,7 @@ class PredictionPage extends StatefulWidget {
 
 class _PredictionPageState extends State<PredictionPage> {
   // Replace with your Render URL after deployment
-  static const String apiUrl = 'https://your-app-name.onrender.com/predict';
+  static const String apiUrl = 'https://student-math-api.onrender.com/predict';
 
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
