@@ -28,6 +28,20 @@ https://colab.research.google.com/drive/1lgRKLVouRWqRasW3dkpiguc0nrrrfnW_#scroll
 
 ---
 
+## Live Deployment
+
+**API Endpoint:** https://linear-regression-j8x8.onrender.com
+
+**Swagger UI / API Documentation:** https://linear-regression-j8x8.onrender.com/docs
+
+The FastAPI service is deployed on Render and provides three endpoints:
+- `GET /` - Welcome message
+- `GET /health` - Health check (returns model type)
+- `POST /predict` - Make predictions (accepts 26-feature StudentInput)
+- `POST /retrain` - Retrain model with new data
+
+---
+
 ## How to Run
 
 1. Download `student-mat.csv` from [Kaggle](https://www.kaggle.com/datasets/whenamancodes/student-performance) and place it alongside the notebook.
@@ -61,3 +75,55 @@ Best model (lowest Test MSE) saved automatically as `best_model.pkl`.
 - Gradient Descent loss curve (Train vs Test MSE per epoch)
 - Before/After scatter plot with fitted regression line (G2 vs G3)
 - Model comparison bar charts (MSE and R2)
+
+---
+
+## Flutter Mobile App
+
+**Setup:**
+```bash
+cd linear_regression_model/summative/FlutterApp
+flutter pub get
+flutter run
+```
+
+The Flutter app provides a user-friendly interface to make predictions:
+- 26 input fields organized into 6 sections (Demographic, Parent Info, School, Support, Lifestyle, Academic)
+- Form validation with min/max range enforcement
+- Real-time predictions via HTTP POST to the live API
+- Color-coded result interpretation (At risk / Passing / Good performance)
+
+**API URL Configuration:**
+The app is pre-configured to use: `https://linear-regression-j8x8.onrender.com/predict`
+
+---
+
+## Submission Checklist
+
+✅ **Notebook (multivariate.ipynb)**
+- Renders on GitHub
+- Colab link functional
+- Contains EDA, training, and visualization
+
+✅ **API (FastAPI)**
+- Live at https://linear-regression-j8x8.onrender.com
+- Swagger UI at https://linear-regression-j8x8.onrender.com/docs
+- All 4 endpoints functional (/predict, /retrain, /health, /)
+- CORS configured for mobile and web
+- 26-feature Pydantic schema with validation
+
+✅ **Flutter App**
+- 26 input fields matching API schema
+- Connected to live API endpoint
+- Displays predictions with interpretation
+
+⏳ **Video Demo** (≤7 minutes, camera visible)
+- TestAPI in Swagger UI
+- Show Flutter app making prediction
+- Explain models and loss
+- Address hyperparameters and CORS
+- YouTube link to be added below
+
+**Video Demo Link:** [Add YouTube link here after recording]
+
+---
