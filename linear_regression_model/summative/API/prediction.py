@@ -6,6 +6,12 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import os
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.tree import DecisionTreeRegressor
 
 # -- App setup ----------------------------------------------------------------
 app = FastAPI(
@@ -31,11 +37,82 @@ app.add_middleware(
 # -- Load model artifacts -----------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-model  = joblib.load(os.path.join(BASE_DIR, "best_model.pkl"))
-scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
+MODEL_PATH = os.path.join(BASE_DIR, "best_model.pkl")
+SCALER_PATH = os.path.join(BASE_DIR, "scaler.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "feature_columns.json")
+DATA_PATH = os.path.join(BASE_DIR, "..", "linear_regression", "student-mat.csv")
 
-with open(os.path.join(BASE_DIR, "feature_columns.json")) as f:
-    FEATURE_COLUMNS = json.load(f)
+DEFAULT_FEATURE_COLUMNS = [
+    "sex", "age", "address", "famsize", "Pstatus", "Medu", "Fedu", "Mjob", "reason",
+    "guardian", "traveltime", "studytime", "failures", "schoolsup", "paid", "nursery",
+    "higher", "internet", "romantic", "famrel", "goout", "Dalc", "Walc", "health", "G1", "G2"
+]
+
+
+def train_and_persist_artifacts() -> tuple[object, object, list[str]]:
+    if not os.path.exists(DATA_PATH):
+        raise RuntimeError(f"Dataset not found at {DATA_PATH}")
+
+    df = pd.read_csv(DATA_PATH, sep=";")
+    target = "G3"
+
+    X = df.drop(columns=[target]).copy()
+    y = df[target].copy()
+
+    for col in X.columns:
+        if X[col].dtype == "object":
+            encoder = LabelEncoder()
+            X[col] = encoder.fit_transform(X[col].astype(str))
+
+    X = X.reindex(columns=DEFAULT_FEATURE_COLUMNS, fill_value=0)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    scaler_local = StandardScaler()
+    X_train_sc = scaler_local.fit_transform(X_train)
+    X_test_sc = scaler_local.transform(X_test)
+
+    models = {
+        "LinearRegression": LinearRegression(),
+        "DecisionTreeRegressor": DecisionTreeRegressor(max_depth=6, random_state=42),
+        "RandomForestRegressor": RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42),
+    }
+
+    best_model_local = None
+    best_mse = None
+
+    for model_instance in models.values():
+        model_instance.fit(X_train_sc, y_train)
+        pred = model_instance.predict(X_test_sc)
+        mse = float(mean_squared_error(y_test, pred))
+        if best_mse is None or mse < best_mse:
+            best_mse = mse
+            best_model_local = model_instance
+
+    if best_model_local is None:
+        raise RuntimeError("Could not train a model from dataset")
+
+    joblib.dump(best_model_local, MODEL_PATH)
+    joblib.dump(scaler_local, SCALER_PATH)
+    with open(FEATURES_PATH, "w", encoding="utf-8") as f:
+        json.dump(DEFAULT_FEATURE_COLUMNS, f, indent=2)
+
+    return best_model_local, scaler_local, DEFAULT_FEATURE_COLUMNS
+
+
+def load_or_create_artifacts() -> tuple[object, object, list[str]]:
+    if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH) and os.path.exists(FEATURES_PATH):
+        loaded_model = joblib.load(MODEL_PATH)
+        loaded_scaler = joblib.load(SCALER_PATH)
+        with open(FEATURES_PATH, encoding="utf-8") as f:
+            loaded_features = json.load(f)
+        return loaded_model, loaded_scaler, loaded_features
+
+    return train_and_persist_artifacts()
+
+model, scaler, FEATURE_COLUMNS = load_or_create_artifacts()
 
 # Exact 26 columns:
 # ['sex','age','address','famsize','Pstatus','Medu','Fedu','Mjob','reason',
@@ -171,8 +248,10 @@ def retrain(payload: RetrainInput):
         X_scaled = scaler.transform(X_new)
         model.fit(X_scaled, y_new)
 
-        joblib.dump(model,  os.path.join(BASE_DIR, "best_model.pkl"))
-        joblib.dump(scaler, os.path.join(BASE_DIR, "scaler.pkl"))
+        joblib.dump(model, MODEL_PATH)
+        joblib.dump(scaler, SCALER_PATH)
+        with open(FEATURES_PATH, "w", encoding="utf-8") as f:
+            json.dump(FEATURE_COLUMNS, f, indent=2)
 
         return {
             "message": "Model retrained successfully",
