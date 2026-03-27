@@ -1,15 +1,16 @@
-name: student_math_predictor_app
-description: Flutter app for predicting student final math grade (G3).
-publish_to: "none"
+name: student_grade_predictor
+description: Predicts student final math grade (G3) using a Linear Regression API.
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.2.2
+  http: ^1.2.1
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
