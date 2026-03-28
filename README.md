@@ -42,6 +42,12 @@ The FastAPI service is deployed on Render and provides three endpoints:
 
 ---
 
+##  Video Demo
+
+Watch the full project demo here: [https://youtu.be/xsKht5pK3K8](https://youtu.be/xsKht5pK3K8)
+
+---
+
 ## How to Run
 
 1. Download `student-mat.csv` from [Kaggle](https://www.kaggle.com/datasets/whenamancodes/student-performance) and place it alongside the notebook.
